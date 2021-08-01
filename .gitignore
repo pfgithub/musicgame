@@ -1,0 +1,6 @@
+lib/
+zig
+deps/
+zig-out/
+zig-cache/
+music.mp3
