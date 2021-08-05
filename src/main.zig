@@ -68,6 +68,7 @@ pub fn main() !void {
     var cursor: usize = 0;
     while (!ray.WindowShouldClose()) {
         ray.UpdateMusicStream(music);
+        //ray.SetMusicTimePlayed(ray.GetMusicTimePlayed() - ray.GetScroll());
 
         var ctime: f32 = ray.GetMusicTimePlayed(music);
         inline for (.{ "A", "S", "D", "F", "J", "K", "L", "SEMICOLON" }) |key| {
@@ -80,12 +81,8 @@ pub fn main() !void {
             }
         }
 
-        while (cursor < map.notes.len and map.notes[cursor].time < ctime - 1) {
-            cursor += 1;
-        }
-        while (ocursor < overlays.items.len and overlays.items[ocursor].time < ctime - 1) {
-            ocursor += 1;
-        }
+        syncCursor(map.notes, &cursor, ctime);
+        syncCursor(overlays.items, &ocursor, ctime);
 
         ray.BeginDrawing();
         ray.ClearBackground(ray.BLACK);
@@ -128,4 +125,16 @@ fn renderNote(note: Note, ctime: f32, color: ray.Color) void {
         @floatToInt(c_int, h),
         color,
     );
+}
+
+fn syncCursor(notes: []const Note, cursor: *usize, ctime: f32) void {
+    while (cursor.* < notes.len and notes[cursor.*].time < ctime - 1) {
+        cursor.* += 1;
+    }
+    if (cursor.* >= notes.len) {
+        if (notes.len != 0) cursor.* = notes.len - 1;
+    }
+    if (cursor.* < notes.len) while (cursor.* > 0 and notes[cursor.*].time > ctime + 1) {
+        cursor.* -= 1;
+    };
 }
